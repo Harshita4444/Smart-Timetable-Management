@@ -1,0 +1,917 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Timetable Manager</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+
+<style>
+/* ─── TOKENS ─────────────────────────────────────────────────────────── */
+:root {
+  --bg:#f4f6fb; --surface:#fff; --surface-2:#f0f2f9; --surface-3:#e8ecf6;
+  --border:#dde2f0; --border-focus:#5b6df8;
+  --fg:#161929; --fg-2:#515774; --fg-3:#9099bb;
+  --accent:#5b6df8; --accent-h:#4455e8; --accent-lite:#eef0fe; --accent-mid:#c7ccfc;
+  --green:#16a34a; --green-bg:#f0fdf4; --green-mid:#bbf7d0;
+  --amber:#b45309; --amber-bg:#fffbeb;
+  --red:#dc2626; --red-bg:#fef2f2;
+  --purple:#7c3aed; --purple-bg:#f5f3ff;
+  --theory-bg:#eef0fe; --theory-fg:#4455e8;
+  --lab-bg:#f0fdf4; --lab-fg:#15803d;
+  --elec-bg:#f5f3ff; --elec-fg:#7c3aed;
+  --free-bg:#f8f9fc; --free-fg:#9099bb;
+  --brk-bg:#fffbeb; --brk-fg:#b45309;
+  --r:12px; --rs:8px; --rx:16px;
+  --sh:0 1px 3px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.06);
+  --sh-lg:0 8px 32px rgba(0,0,0,.11);
+  color-scheme:light;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#0d0f1a; --surface:#161929; --surface-2:#1e2238; --surface-3:#252a42;
+  --border:#2a2f4a; --border-focus:#7b8fff;
+  --fg:#e4e8f8; --fg-2:#8890b5; --fg-3:#50587a;
+  --accent:#7b8fff; --accent-h:#6b7fee; --accent-lite:#1c2148; --accent-mid:#3a4280;
+  --green:#4ade80; --green-bg:#0a1f12; --green-mid:#14532d;
+  --amber:#fbbf24; --amber-bg:#1a1600;
+  --red:#f87171; --red-bg:#1f0a0a;
+  --purple:#c084fc; --purple-bg:#1a0d2e;
+  --theory-bg:#1c2148; --theory-fg:#7b8fff;
+  --lab-bg:#0a1f12; --lab-fg:#4ade80;
+  --elec-bg:#1a0d2e; --elec-fg:#c084fc;
+  --free-bg:#161929; --free-fg:#50587a;
+  --brk-bg:#1a1600; --brk-fg:#fbbf24;
+  --sh:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.3);
+  --sh-lg:0 8px 32px rgba(0,0,0,.5);
+  color-scheme:dark;
+}}
+:root[data-theme=dark]{
+  --bg:#0d0f1a; --surface:#161929; --surface-2:#1e2238; --surface-3:#252a42;
+  --border:#2a2f4a; --border-focus:#7b8fff;
+  --fg:#e4e8f8; --fg-2:#8890b5; --fg-3:#50587a;
+  --accent:#7b8fff; --accent-h:#6b7fee; --accent-lite:#1c2148; --accent-mid:#3a4280;
+  --green:#4ade80; --green-bg:#0a1f12; --green-mid:#14532d;
+  --amber:#fbbf24; --amber-bg:#1a1600;
+  --red:#f87171; --red-bg:#1f0a0a;
+  --purple:#c084fc; --purple-bg:#1a0d2e;
+  --theory-bg:#1c2148; --theory-fg:#7b8fff;
+  --lab-bg:#0a1f12; --lab-fg:#4ade80;
+  --elec-bg:#1a0d2e; --elec-fg:#c084fc;
+  --free-bg:#161929; --free-fg:#50587a;
+  --brk-bg:#1a1600; --brk-fg:#fbbf24;
+  --sh:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.3);
+  --sh-lg:0 8px 32px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100vh}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg); color:var(--fg);
+  padding-left:max(0px,env(safe-area-inset-left,0px));
+  padding-right:max(0px,env(safe-area-inset-right,0px));
+}
+#root{min-height:100vh}
+
+/* HEADER */
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:200;box-shadow:var(--sh)}
+.hdr-in{max-width:1200px;margin:0 auto;
+  padding:12px max(20px,env(safe-area-inset-left,0px));
+  display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:var(--accent);border-radius:9px;
+  display:grid;place-items:center;font-size:17px;flex-shrink:0}
+.logo-txt{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;
+  letter-spacing:-.3px}
+.logo-txt span{color:var(--accent)}
+.hdr-actions{display:flex;align-items:center;gap:8px}
+
+/* MAIN */
+.main{max-width:1200px;margin:0 auto;
+  padding:28px max(20px,env(safe-area-inset-left,0px)) 72px}
+
+/* STEP BAR */
+.steps{display:flex;gap:0;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:4px;box-shadow:var(--sh);margin-bottom:28px;overflow-x:auto}
+.step{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 8px;border-radius:9px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.step.active{background:var(--accent-lite);color:var(--accent)}
+.step.done{color:var(--green)}
+.step.locked{color:var(--fg-3);cursor:default}
+.step-n{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
+  font-size:11px;font-weight:700;flex-shrink:0}
+.step.active .step-n{background:var(--accent);color:#fff}
+.step.done .step-n{background:var(--green);color:#fff}
+.step.locked .step-n{background:var(--surface-2);color:var(--fg-3)}
+.step-lbl{font-size:12px;font-weight:600}
+@media(max-width:480px){.step-lbl{display:none}.step{flex:0 0 auto;padding:9px}}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:24px;box-shadow:var(--sh)}
+.card+.card,.card+.section-card{margin-top:14px}
+.card-h{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;
+  margin-bottom:3px;letter-spacing:-.3px}
+.card-sub{font-size:13px;color:var(--fg-2);margin-bottom:18px}
+hr.div{border:none;border-top:1px solid var(--border);margin:18px 0}
+
+/* FORM */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg.full{grid-column:1/-1}
+label{font-size:11px;font-weight:700;color:var(--fg-2);text-transform:uppercase;letter-spacing:.6px}
+input,select{background:var(--surface-2);border:1.5px solid var(--border);
+  border-radius:var(--rs);padding:8px 11px;font-size:13px;font-family:inherit;
+  color:var(--fg);width:100%;outline:none;transition:border-color .14s,box-shadow .14s}
+input:focus,select:focus{border-color:var(--border-focus);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
+input::placeholder{color:var(--fg-3)}
+select option{background:var(--surface);color:var(--fg)}
+
+/* DAYS */
+.days-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}
+.day-chip input[type=checkbox]{display:none}
+.day-chip-l{padding:7px 13px;border-radius:20px;font-size:12px;font-weight:600;
+  border:1.5px solid var(--border);background:var(--surface-2);color:var(--fg-2);
+  cursor:pointer;transition:all .14s;user-select:none}
+.day-chip input:checked+.day-chip-l{background:var(--accent-lite);
+  border-color:var(--accent);color:var(--accent)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  padding:9px 16px;border-radius:var(--rs);font-size:13px;font-weight:600;
+  font-family:inherit;cursor:pointer;border:none;transition:all .14s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent-h);
+  transform:translateY(-1px);box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 35%,transparent)}
+.btn-secondary{background:var(--surface-2);color:var(--fg);border:1px solid var(--border)}
+.btn-secondary:hover:not(:disabled){background:var(--surface-3)}
+.btn-ghost{background:transparent;color:var(--fg-2);padding:7px 10px}
+.btn-ghost:hover{background:var(--surface-2);color:var(--fg)}
+.btn-danger{background:var(--red-bg);color:var(--red);
+  border:1px solid color-mix(in srgb,var(--red) 25%,transparent)}
+.btn-danger:hover:not(:disabled){background:var(--red);color:#fff}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-xs{padding:3px 8px;font-size:11px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.btn-green{background:var(--green-bg);color:var(--green);
+  border:1px solid color-mix(in srgb,var(--green) 25%,transparent)}
+.btn-green:hover:not(:disabled){background:var(--green);color:#fff}
+
+/* ACTION ROW */
+.act{display:flex;align-items:center;justify-content:space-between;
+  margin-top:20px;gap:10px;flex-wrap:wrap}
+.act-r{display:flex;align-items:center;gap:8px;margin-left:auto}
+
+/* SUGGESTIONS */
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;margin-bottom:10px}
+.chip{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--fg-2);
+  cursor:pointer;transition:all .14s}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-lite)}
+
+/* ALERT / INFO */
+.info{background:var(--accent-lite);border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);
+  border-radius:var(--rs);padding:11px 13px;font-size:12px;color:var(--accent);
+  display:flex;gap:8px;align-items:flex-start;margin-bottom:14px;line-height:1.5}
+.alert{padding:11px 14px;border-radius:var(--rs);font-size:13px;
+  display:flex;align-items:flex-start;gap:9px;margin-bottom:14px;line-height:1.5}
+.alert-err{background:var(--red-bg);color:var(--red);
+  border:1px solid color-mix(in srgb,var(--red) 28%,transparent)}
+.alert-ok{background:var(--green-bg);color:var(--green);
+  border:1px solid color-mix(in srgb,var(--green) 28%,transparent)}
+.alert-warn{background:var(--amber-bg);color:var(--amber);
+  border:1px solid color-mix(in srgb,var(--amber) 28%,transparent)}
+
+/* SECTIONS WIZARD (step 3) */
+.section-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.sec-tab{padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;
+  background:transparent;color:var(--fg-2);border-bottom:2px solid transparent;
+  margin-bottom:-2px;transition:all .14s;white-space:nowrap;font-family:inherit}
+.sec-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.sec-tab:hover:not(.active){color:var(--fg);background:var(--surface-2)}
+
+/* SUBJECT ROWS */
+.subj-hdr{display:grid;
+  grid-template-columns:1.6fr 0.9fr 1.3fr 0.7fr 0.9fr 1.1fr auto;
+  gap:7px;padding:0 11px 4px;align-items:end}
+.subj-row{display:grid;
+  grid-template-columns:1.6fr 0.9fr 1.3fr 0.7fr 0.9fr 1.1fr auto;
+  gap:7px;align-items:center;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:var(--rs);
+  padding:9px 11px;transition:border-color .14s}
+.subj-row:hover{border-color:var(--border-focus)}
+.subj-row input,.subj-row select{background:var(--surface);font-size:12px;padding:6px 9px}
+@media(max-width:700px){
+  .subj-hdr{display:none}
+  .subj-row{grid-template-columns:1fr 1fr;gap:6px}
+}
+
+/* HOURS HINT */
+.hrs-hint{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--green);
+  cursor:pointer;padding:2px 0;font-weight:600;white-space:nowrap}
+.hrs-hint:hover{text-decoration:underline}
+
+/* NORMS TABLE */
+.norms-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.norms-table th{background:var(--surface-2);padding:8px 12px;text-align:left;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--fg-2);
+  border-bottom:1px solid var(--border)}
+.norms-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--fg);vertical-align:middle}
+.norms-table tr:last-child td{border-bottom:none}
+
+/* TIMETABLE */
+.tt-hdr{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px 22px;margin-bottom:14px;box-shadow:var(--sh)}
+.tt-title{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.3px}
+.tt-sub{font-size:13px;color:var(--fg-2);margin-top:2px}
+.tt-meta{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:10px}
+.tt-meta-i{font-size:12px;color:var(--fg-2);display:flex;align-items:center;gap:5px}
+.tt-meta-i strong{color:var(--fg);font-weight:600}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--fg-2)}
+.leg-i{display:flex;align-items:center;gap:5px}
+.leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+
+/* Section tabs in timetable view */
+.view-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.view-tab{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;
+  cursor:pointer;border:1.5px solid var(--border);background:var(--surface-2);
+  color:var(--fg-2);transition:all .14s}
+.view-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.view-tab:hover:not(.active){border-color:var(--accent);color:var(--accent);background:var(--accent-lite)}
+
+.tt-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh)}
+table.tt{width:100%;border-collapse:collapse;font-size:12px;background:var(--surface);min-width:580px}
+table.tt th{background:var(--surface-2);color:var(--fg-2);font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.6px;padding:10px 9px;
+  border-bottom:2px solid var(--border);text-align:left;white-space:nowrap}
+table.tt th:first-child{width:90px;background:color-mix(in srgb,var(--accent) 8%,var(--surface-2));color:var(--accent)}
+table.tt td{padding:0;border-bottom:1px solid var(--border);border-right:1px solid var(--border);vertical-align:middle}
+table.tt td:last-child{border-right:none}
+table.tt tr:last-child td{border-bottom:none}
+.day-cell{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  padding:8px 9px;color:var(--accent);white-space:nowrap;
+  background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
+.slot{padding:7px 9px;display:flex;flex-direction:column;gap:1px;min-width:100px}
+.slot-subj{font-weight:700;font-size:11px;color:var(--fg);line-height:1.3}
+.slot-code{font-size:10px;color:var(--fg-3);font-variant-numeric:tabular-nums}
+.slot-fac{font-size:10px;color:var(--fg-2);margin-top:1px}
+.slot-time{font-size:9px;color:var(--fg-3);font-variant-numeric:tabular-nums}
+td.theory-s{background:color-mix(in srgb,var(--theory-bg) 55%,var(--surface))}
+td.lab-s{background:color-mix(in srgb,var(--lab-bg) 55%,var(--surface))}
+td.elective-s{background:color-mix(in srgb,var(--elec-bg) 55%,var(--surface))}
+td.break-s{background:var(--brk-bg)}
+.slot-brk{text-align:center;padding:5px 9px}
+.slot-brk-lbl{font-size:10px;font-weight:700;color:var(--brk-fg);text-transform:uppercase;letter-spacing:.5px}
+.slot-brk-time{font-size:9px;color:color-mix(in srgb,var(--brk-fg) 65%,transparent);margin-top:1px}
+.slot-free{opacity:.5}
+
+/* SUMMARY */
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin-top:14px}
+.sum-tile{background:var(--surface-2);border:1px solid var(--border);
+  border-radius:var(--rs);padding:11px 13px;display:flex;flex-direction:column;gap:2px}
+.sum-lbl{font-size:10px;color:var(--fg-2);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.sum-val{font-size:20px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.sum-name{font-size:11px;color:var(--fg);font-weight:500;line-height:1.3}
+
+/* SPINNER */
+.spin{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:rot .7s linear infinite;margin:36px auto}
+@keyframes rot{to{transform:rotate(360deg)}}
+.loading{text-align:center;padding:48px 20px}
+.loading p{color:var(--fg-2);margin-top:10px;font-size:13px}
+
+/* HOURS NORMS MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;
+  display:grid;place-items:center;padding:20px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--rx);
+  padding:24px;width:100%;max-width:520px;box-shadow:var(--sh-lg);
+  max-height:80vh;overflow-y:auto}
+.modal-title{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--fg-2);margin-bottom:16px}
+.modal-close{position:absolute;top:16px;right:16px}
+
+/* DEPT section card */
+.section-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.section-card-hdr{padding:14px 20px;background:var(--surface-2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.section-card-hdr-l{display:flex;align-items:center;gap:10px}
+.sec-badge{background:var(--accent);color:#fff;border-radius:var(--rs);
+  padding:4px 12px;font-size:12px;font-weight:700;letter-spacing:.3px}
+.section-card-body{padding:18px 20px}
+
+/* status pill */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;
+  font-size:11px;font-weight:700}
+.pill-ok{background:var(--green-bg);color:var(--green)}
+.pill-warn{background:var(--amber-bg);color:var(--amber)}
+.pill-err{background:var(--red-bg);color:var(--red)}
+
+@media(max-width:600px){
+  .card{padding:16px}
+  .fgrid{grid-template-columns:1fr}
+  .main{padding-inline:max(14px,env(safe-area-inset-left,0px))}
+}
+
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.badge-theory{background:var(--theory-bg);color:var(--theory-fg)}
+.badge-lab{background:var(--lab-bg);color:var(--lab-fg)}
+.badge-elective{background:var(--elec-bg);color:var(--elec-fg)}
+
+@media print{
+  .hdr,.steps,.act,.no-print,.modal-overlay{display:none!important}
+  .main{padding:0}
+  .tt-wrap{box-shadow:none;border:1px solid #ccc}
+  body{background:#fff;color:#000}
+  .section-card+.section-card{margin-top:20px;page-break-before:auto}
+}
+</style>
+
+<div id="root"></div>
+
+<script>
+const {useState,useEffect,useCallback,useRef,useMemo} = React;
+const API = 'http://localhost:8000';
+
+function uid(){ return Math.random().toString(36).slice(2,9) }
+
+const DAYS_ALL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+// ── WEEKLY HOURS NORMS (client-side quick lookup) ─────────────────────────
+const TYPE_NORMS = {
+  theory:   {min:3,max:5,recommended:4},
+  lab:      {min:2,max:4,recommended:2},
+  elective: {min:2,max:3,recommended:2},
+};
+const KEYWORD_NORMS = [
+  {k:'math',h:5,t:'theory'},{k:'calculus',h:5,t:'theory'},
+  {k:'physics',h:3,t:'theory'},{k:'chemistry',h:3,t:'theory'},
+  {k:'english',h:2,t:'theory'},{k:'communication',h:2,t:'theory'},
+  {k:'data struct',h:4,t:'theory'},{k:'algorithm',h:4,t:'theory'},
+  {k:'dbms',h:3,t:'theory'},{k:'database',h:3,t:'theory'},
+  {k:'operating system',h:3,t:'theory'},{k:'os ',h:3,t:'theory'},
+  {k:'computer network',h:3,t:'theory'},{k:'network',h:3,t:'theory'},
+  {k:'software engi',h:3,t:'theory'},{k:'machine learn',h:4,t:'theory'},
+  {k:'artificial intel',h:3,t:'theory'},{k:'web dev',h:3,t:'theory'},
+  {k:'compiler',h:3,t:'theory'},{k:'theory of comp',h:3,t:'theory'},
+  {k:'microprocess',h:3,t:'theory'},{k:'discrete',h:3,t:'theory'},
+  {k:'lab',h:2,t:'lab'},{k:'practical',h:2,t:'lab'},{k:'workshop',h:2,t:'lab'},
+  {k:'project',h:4,t:'elective'},{k:'internship',h:2,t:'elective'},
+];
+function suggestHours(name,stype){
+  const nl = name.toLowerCase();
+  for(const kn of KEYWORD_NORMS){
+    if(nl.includes(kn.k)) return {hours:kn.h,type:kn.t,source:'keyword'};
+  }
+  const n = TYPE_NORMS[stype]||TYPE_NORMS.theory;
+  return {hours:n.recommended,type:stype,source:'default'};
+}
+
+// ── STEPS BAR ────────────────────────────────────────────────────────────
+function StepsBar({cur,max,go}){
+  const steps=[{l:'Institution'},{l:'Schedule'},{l:'Sections'},{l:'Timetable'}];
+  return React.createElement('div',{className:'steps'},
+    steps.map((s,i)=>{
+      const st=i===cur?'active':i<cur?'done':'locked';
+      return React.createElement('div',{
+        key:i,className:`step ${st}`,
+        onClick:i<=max?()=>go(i):undefined,
+        style:{cursor:i<=max?'pointer':'default'},
+      },
+        React.createElement('span',{className:'step-n'},st==='done'?'✓':i+1),
+        React.createElement('span',{className:'step-lbl'},s.l)
+      );
+    })
+  );
+}
+
+// ── STEP 1: INSTITUTION ──────────────────────────────────────────────────
+function Step1({data,set,onNext}){
+  const s=(k,v)=>set({...data,[k]:v});
+  const ok=data.institution_name&&data.department&&data.academic_year;
+  return React.createElement('div',null,
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-h'},'🏛️ Institution Details'),
+      React.createElement('div',{className:'card-sub'},'Basic info about your institution'),
+      React.createElement('div',{className:'fgrid'},
+        F('institution_name','Institution Name','e.g. ABC Engineering College',data,s,'full'),
+        F('department','Department','e.g. Computer Science & Engineering',data,s,'full'),
+        F('academic_year','Academic Year','e.g. 2024–25',data,s),
+      )
+    ),
+    React.createElement('div',{className:'act'},
+      React.createElement('span'),
+      React.createElement('button',{className:'btn btn-primary',onClick:onNext,disabled:!ok},'Next: Schedule →')
+    )
+  );
+}
+
+function F(key,label,ph,data,set,cls=''){
+  return React.createElement('div',{className:`fg ${cls}`,key},
+    React.createElement('label',{htmlFor:key},label),
+    React.createElement('input',{id:key,type:'text',placeholder:ph,
+      value:data[key]||'',onChange:e=>set(key,e.target.value)})
+  );
+}
+function NF(key,label,min,max,data,set){
+  return React.createElement('div',{className:'fg',key},
+    React.createElement('label',{htmlFor:key},label),
+    React.createElement('input',{id:key,type:'number',min,max,
+      value:data[key]??'',onChange:e=>set(key,parseInt(e.target.value)||0)})
+  );
+}
+function TF(key,label,data,set){
+  return React.createElement('div',{className:'fg',key},
+    React.createElement('label',{htmlFor:key},label),
+    React.createElement('input',{id:key,type:'time',
+      value:data[key]||'',onChange:e=>set(key,e.target.value)})
+  );
+}
+
+// ── STEP 2: SCHEDULE ─────────────────────────────────────────────────────
+function Step2({data,set,onNext,onBack}){
+  const s=(k,v)=>set({...data,[k]:v});
+  const toggle=day=>{
+    const c=data.days||[];
+    s('days',c.includes(day)?c.filter(d=>d!==day):[...c,day]);
+  };
+  const ok=(data.days||[]).length>0&&data.periods_per_day>0&&data.start_time&&data.period_duration>0;
+  return React.createElement('div',null,
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'card-h'},'⏰ Schedule Configuration'),
+      React.createElement('div',{className:'card-sub'},'Working days, periods and timings for the whole department'),
+      React.createElement('div',{className:'fg',style:{marginBottom:14}},
+        React.createElement('label',null,'Working Days'),
+        React.createElement('div',{className:'days-row'},
+          DAYS_ALL.map(day=>React.createElement('label',{className:'day-chip',key:day},
+            React.createElement('input',{type:'checkbox',
+              checked:(data.days||[]).includes(day),onChange:()=>toggle(day)}),
+            React.createElement('span',{className:'day-chip-l'},day.slice(0,3))
+          ))
+        )
+      ),
+      React.createElement('hr',{className:'div'}),
+      React.createElement('div',{className:'fgrid'},
+        NF('periods_per_day','Periods per Day',1,12,data,s),
+        NF('period_duration','Period Duration (min)',30,120,data,s),
+        TF('start_time','Start Time',data,s),
+      ),
+      React.createElement('hr',{className:'div'}),
+      React.createElement('div',{className:'card-h',style:{fontSize:14,marginBottom:4}},'Break Settings'),
+      React.createElement('div',{className:'fgrid'},
+        NF('break_after_period','Short Break After Period #',1,12,data,s),
+        NF('break_duration','Short Break Duration (min)',5,60,data,s),
+        NF('lunch_after_period','Lunch After Period # (0 = none)',0,12,data,s),
+        NF('lunch_duration','Lunch Duration (min)',15,90,data,s),
+      )
+    ),
+    React.createElement('div',{className:'act'},
+      React.createElement('button',{className:'btn btn-secondary',onClick:onBack},'← Back'),
+      React.createElement('button',{className:'btn btn-primary',onClick:onNext,disabled:!ok},'Next: Sections →')
+    )
+  );
+}
+
+// ── STEP 3: SECTIONS + SUBJECTS ──────────────────────────────────────────
+function Step3({data,set,onNext,onBack,schedData,suggestions,showNormsModal}){
+  const sections=data.sections||[];
+  const [activeIdx,setActiveIdx]=useState(0);
+  const setSections=s=>set({...data,sections:s});
+
+  const addSection=()=>{
+    const letter=String.fromCharCode(65+sections.length);
+    setSections([...sections,{id:uid(),section:`Section ${letter}`,subjects:[]}]);
+    setActiveIdx(sections.length);
+  };
+  const removeSection=i=>{
+    const ns=sections.filter((_,j)=>j!==i);
+    setSections(ns);
+    setActiveIdx(Math.max(0,i-1));
+  };
+  const updateSection=(i,k,v)=>setSections(sections.map((s,j)=>j===i?{...s,[k]:v}:s));
+
+  const setSubjects=(i,subs)=>updateSection(i,'subjects',subs);
+  const addSubject=i=>setSubjects(i,[...sections[i].subjects,
+    {id:uid(),name:'',code:'',faculty:'',hours_per_week:3,subject_type:'theory'}]);
+  const removeSubject=(i,id)=>setSubjects(i,sections[i].subjects.filter(s=>s.id!==id));
+  const updateSubject=(i,id,k,v)=>setSubjects(i,
+    sections[i].subjects.map(s=>s.id===id?{...s,[k]:v}:s));
+
+  const autoSuggest=(si,id)=>{
+    const subj=sections[si].subjects.find(s=>s.id===id);
+    if(!subj||!subj.name) return;
+    const {hours,type}=suggestHours(subj.name,subj.subject_type);
+    updateSubject(si,id,'hours_per_week',hours);
+    updateSubject(si,id,'subject_type',type);
+  };
+
+  const addSuggestion=(i,sg)=>{
+    const exists=sections[i].subjects.find(s=>s.code===sg.code);
+    if(!exists) setSubjects(i,[...sections[i].subjects,{...sg,id:uid()}]);
+  };
+
+  const availSlots=(schedData.days||[]).length*(schedData.periods_per_day||0);
+  const sectionOk=sec=>{
+    if(!sec.subjects.length) return false;
+    const ok=sec.subjects.every(s=>s.name&&s.code&&s.faculty&&s.hours_per_week>0);
+    const tot=sec.subjects.reduce((a,s)=>a+(parseInt(s.hours_per_week)||0),0);
+    return ok&&tot<=availSlots;
+  };
+  const allOk=sections.length>0&&sections.every(sectionOk);
+  const cur=sections[activeIdx];
+
+  return React.createElement('div',null,
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8,marginBottom:16}},
+        React.createElement('div',null,
+          React.createElement('div',{className:'card-h'},'🏫 Department Sections'),
+          React.createElement('div',{className:'card-sub',style:{marginBottom:0}},'Add one or multiple sections — each gets its own timetable')
+        ),
+        React.createElement('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},
+          React.createElement('button',{className:'btn btn-ghost btn-sm',onClick:showNormsModal},'📊 Hours Norms'),
+          React.createElement('button',{className:'btn btn-secondary btn-sm',onClick:addSection},'+ Add Section'),
+        )
+      ),
+
+      sections.length===0
+        ? React.createElement('div',{style:{textAlign:'center',padding:'32px',color:'var(--fg-3)',fontSize:13}},
+            'No sections yet. Click "+ Add Section" to begin.')
+        : React.createElement('div',null,
+            // Section tabs
+            React.createElement('div',{className:'section-tabs'},
+              sections.map((sec,i)=>{
+                const tot=sec.subjects.reduce((a,s)=>a+(parseInt(s.hours_per_week)||0),0);
+                const status=!sec.subjects.length?'warn':tot>availSlots?'err':'ok';
+                return React.createElement('button',{
+                  key:sec.id,className:`sec-tab${activeIdx===i?' active':''}`,
+                  onClick:()=>setActiveIdx(i)
+                },
+                  sec.section,
+                  ' ',
+                  React.createElement('span',{className:`pill pill-${status}`,style:{marginLeft:4}},
+                    status==='ok'?`${tot}h`:status==='warn'?'Empty':'Over')
+                );
+              }),
+            ),
+
+            cur&&React.createElement('div',null,
+              // Section header
+              React.createElement('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:14,flexWrap:'wrap'}},
+                React.createElement('div',{className:'fg',style:{flex:'1 1 200px'}},
+                  React.createElement('label',null,'Section Name'),
+                  React.createElement('input',{value:cur.section,
+                    onChange:e=>updateSection(activeIdx,'section',e.target.value)})
+                ),
+                React.createElement('div',{style:{display:'flex',gap:6,marginTop:16}},
+                  sections.length>1&&React.createElement('button',{
+                    className:'btn btn-danger btn-sm',
+                    onClick:()=>removeSection(activeIdx)
+                  },'Remove Section'),
+                )
+              ),
+
+              // Hours info
+              (()=>{
+                const tot=cur.subjects.reduce((a,s)=>a+(parseInt(s.hours_per_week)||0),0);
+                return React.createElement('div',{className:`info${tot>availSlots?' alert alert-err':''}`},
+                  '📊 ',
+                  React.createElement('span',null,
+                    `Available slots: ${availSlots}  ·  Assigned: `,
+                    React.createElement('strong',null,`${tot} hrs/wk`),
+                    tot>availSlots?' — too many! Reduce hours or add periods.':` — ${availSlots-tot} slots free`)
+                );
+              })(),
+
+              // Quick add
+              React.createElement('div',{style:{marginBottom:8}},
+                React.createElement('label',null,'Quick Add Subjects'),
+                React.createElement('div',{className:'chip-row'},
+                  (suggestions||[]).map(sg=>React.createElement('button',{
+                    key:sg.code,className:'chip',
+                    onClick:()=>addSuggestion(activeIdx,sg)
+                  },`+ ${sg.name}`))
+                )
+              ),
+
+              // Subject header labels (desktop)
+              React.createElement('div',{className:'subj-hdr'},
+                ['Subject Name','Code','Faculty','Hrs/Wk','Type','',''].map((h,i)=>
+                  React.createElement('label',{key:i,style:{fontSize:10}},h))
+              ),
+
+              // Subject rows
+              React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:8}},
+                cur.subjects.map(s=>
+                  React.createElement('div',{className:'subj-row',key:s.id},
+                    React.createElement('input',{placeholder:'Subject name',value:s.name,
+                      onChange:e=>updateSubject(activeIdx,s.id,'name',e.target.value)}),
+                    React.createElement('input',{placeholder:'CS101',value:s.code,
+                      onChange:e=>updateSubject(activeIdx,s.id,'code',e.target.value)}),
+                    React.createElement('input',{placeholder:'Prof. Name',value:s.faculty,
+                      onChange:e=>updateSubject(activeIdx,s.id,'faculty',e.target.value)}),
+                    React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:2}},
+                      React.createElement('input',{type:'number',min:1,max:20,
+                        value:s.hours_per_week,
+                        onChange:e=>updateSubject(activeIdx,s.id,'hours_per_week',parseInt(e.target.value)||1)}),
+                      s.name&&React.createElement('span',{
+                        className:'hrs-hint',
+                        onClick:()=>autoSuggest(activeIdx,s.id),
+                        title:'Click to apply suggested hours'
+                      },`✨ Suggest: ${suggestHours(s.name,s.subject_type).hours}h`)
+                    ),
+                    React.createElement('select',{value:s.subject_type,
+                      onChange:e=>updateSubject(activeIdx,s.id,'subject_type',e.target.value)},
+                      React.createElement('option',{value:'theory'},'Theory'),
+                      React.createElement('option',{value:'lab'},'Lab'),
+                      React.createElement('option',{value:'elective'},'Elective'),
+                    ),
+                    React.createElement('span',{className:`badge badge-${s.subject_type}`},
+                      s.subject_type.charAt(0).toUpperCase()+s.subject_type.slice(1)),
+                    React.createElement('button',{className:'btn btn-danger btn-xs',
+                      onClick:()=>removeSubject(activeIdx,s.id)},'✕')
+                  )
+                ),
+                React.createElement('button',{className:'btn btn-secondary btn-sm',
+                  style:{alignSelf:'flex-start'},onClick:()=>addSubject(activeIdx)},'+ Add Subject')
+              )
+            )
+          )
+    ),
+
+    React.createElement('div',{className:'act'},
+      React.createElement('button',{className:'btn btn-secondary',onClick:onBack},'← Back'),
+      React.createElement('button',{
+        className:'btn btn-primary',onClick:onNext,
+        disabled:!allOk
+      },sections.length>1?`⚡ Generate ${sections.length} Timetables →`:'⚡ Generate Timetable →')
+    )
+  );
+}
+
+// ── NORMS MODAL ───────────────────────────────────────────────────────────
+function NormsModal({onClose}){
+  const rows=[
+    {type:'Theory',min:3,max:5,rec:4,note:'Core theory courses (CS, Math, Science)'},
+    {type:'Lab',min:2,max:4,rec:2,note:'Always 2 consecutive periods'},
+    {type:'Elective',min:2,max:3,rec:2,note:'Optional / elective courses'},
+    {type:'Mathematics',min:5,max:5,rec:5,note:'Special — typically 5 hrs/week'},
+    {type:'English / Comm.',min:2,max:2,rec:2,note:'Communication skills — 2 hrs'},
+    {type:'ML / AI',min:4,max:4,rec:4,note:'Advanced CS subjects — 4 hrs'},
+    {type:'Project',min:4,max:6,rec:4,note:'Project / dissertation hours'},
+  ];
+  return React.createElement('div',{className:'modal-overlay',onClick:onClose},
+    React.createElement('div',{className:'modal',onClick:e=>e.stopPropagation()},
+      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:14}},
+        React.createElement('div',null,
+          React.createElement('div',{className:'modal-title'},'📊 Weekly Hours Norms'),
+          React.createElement('div',{className:'modal-sub'},'Standard recommendations for Indian engineering curriculum (AICTE / university norms)')
+        ),
+        React.createElement('button',{className:'btn btn-ghost btn-sm',onClick:onClose},'✕ Close')
+      ),
+      React.createElement('table',{className:'norms-table'},
+        React.createElement('thead',null,
+          React.createElement('tr',null,
+            ['Subject / Type','Min','Max','Recommended','Note'].map(h=>
+              React.createElement('th',{key:h},h))
+          )
+        ),
+        React.createElement('tbody',null,
+          rows.map(r=>React.createElement('tr',{key:r.type},
+            React.createElement('td',null,React.createElement('strong',null,r.type)),
+            React.createElement('td',null,r.min),
+            React.createElement('td',null,r.max),
+            React.createElement('td',null,
+              React.createElement('span',{style:{color:'var(--accent)',fontWeight:700}},r.rec,' hrs')),
+            React.createElement('td',{style:{color:'var(--fg-2)',fontSize:11}},r.note)
+          ))
+        )
+      ),
+      React.createElement('div',{className:'info',style:{marginTop:14}},
+        '💡',
+        React.createElement('span',null,'Click the ✨ "Suggest" hint on any subject row to auto-apply the recommended hours and type based on the subject name.')
+      )
+    )
+  );
+}
+
+// ── STEP 4: TIMETABLE VIEW ────────────────────────────────────────────────
+function Step4({result,onBack,onRegen,loading,error}){
+  const [activeSec,setActiveSec]=useState(0);
+
+  if(loading) return React.createElement('div',{className:'loading'},
+    React.createElement('div',{className:'spin'}),
+    React.createElement('p',null,'Generating department timetable…')
+  );
+
+  if(error) return React.createElement('div',null,
+    React.createElement('div',{className:'alert alert-err'},'❌ ',error),
+    React.createElement('div',{className:'act'},
+      React.createElement('button',{className:'btn btn-secondary',onClick:onBack},'← Edit'),
+      React.createElement('button',{className:'btn btn-primary',onClick:onRegen},'↺ Retry'),
+    )
+  );
+
+  if(!result) return React.createElement('div',{style:{textAlign:'center',padding:'60px 20px',color:'var(--fg-3)'}},
+    React.createElement('div',{style:{fontSize:48,marginBottom:12}},'📋'),
+    React.createElement('div',{style:{fontSize:16,fontWeight:600,color:'var(--fg)',marginBottom:6}},'No timetable yet'),
+    React.createElement('div',null,'Go back and configure sections.')
+  );
+
+  const {institution_name,department,academic_year,sections}=result;
+  const sec=sections[activeSec]||sections[0];
+
+  const firstDay=sec?.schedule?.[0];
+  const headers=firstDay?.slots.map(s=>s.is_break||s.is_lunch?s.break_label:`P${s.period}`)||[];
+
+  return React.createElement('div',null,
+    // Header card
+    React.createElement('div',{className:'tt-hdr'},
+      React.createElement('div',{className:'tt-title'},institution_name),
+      React.createElement('div',{className:'tt-sub'},department),
+      React.createElement('div',{className:'tt-meta'},
+        React.createElement('div',{className:'tt-meta-i'},'📅 ',React.createElement('strong',null,academic_year)),
+        React.createElement('div',{className:'tt-meta-i'},'🏫 ',React.createElement('strong',null,`${sections.length} Section${sections.length>1?'s':''}`)),
+        React.createElement('div',{className:'tt-meta-i'},'📖 ',React.createElement('strong',null,`${Object.keys(sec?.summary||{}).length} Subjects`)),
+      ),
+      React.createElement('div',{className:'legend'},
+        [{l:'Theory',c:'var(--theory-fg)'},{l:'Lab',c:'var(--lab-fg)'},{l:'Elective',c:'var(--elec-fg)'},{l:'Break',c:'var(--brk-fg)'}]
+          .map(x=>React.createElement('div',{key:x.l,className:'leg-i'},
+            React.createElement('div',{className:'leg-dot',style:{background:x.c}}),
+            React.createElement('span',null,x.l)
+          ))
+      )
+    ),
+
+    // Section tabs (if >1)
+    sections.length>1&&React.createElement('div',{className:'view-tabs no-print'},
+      sections.map((s,i)=>React.createElement('button',{
+        key:i,className:`view-tab${activeSec===i?' active':''}`,
+        onClick:()=>setActiveSec(i)
+      },s.section))
+    ),
+
+    // Timetable grid
+    sec&&React.createElement('div',null,
+      sections.length>1&&React.createElement('div',{style:{marginBottom:10,display:'flex',alignItems:'center',gap:8}},
+        React.createElement('span',{className:'sec-badge'},sec.section),
+        React.createElement('span',{style:{fontSize:12,color:'var(--fg-2)'}},
+          `${Object.keys(sec.summary).length} subjects · ${Object.values(sec.summary).reduce((a,b)=>a+b,0)} periods/week`)
+      ),
+
+      React.createElement('div',{className:'tt-wrap'},
+        React.createElement('table',{className:'tt'},
+          React.createElement('thead',null,
+            React.createElement('tr',null,
+              React.createElement('th',null,'Day'),
+              ...headers.map((h,i)=>React.createElement('th',{key:i},h))
+            )
+          ),
+          React.createElement('tbody',null,
+            sec.schedule.map(day=>
+              React.createElement('tr',{key:day.day},
+                React.createElement('td',{className:'day-cell'},day.day.slice(0,3).toUpperCase()),
+                ...day.slots.map((slot,si)=>{
+                  if(slot.is_break||slot.is_lunch)
+                    return React.createElement('td',{key:si,className:'break-s'},
+                      React.createElement('div',{className:'slot-brk'},
+                        React.createElement('div',{className:'slot-brk-lbl'},slot.break_label),
+                        React.createElement('div',{className:'slot-brk-time'},slot.time_slot)
+                      )
+                    );
+                  const tc=slot.subject_type&&slot.subject_type!=='free'?`${slot.subject_type}-s`:'';
+                  return React.createElement('td',{key:si,className:tc},
+                    React.createElement('div',{className:`slot${slot.subject_type==='free'?' slot-free':''}`},
+                      React.createElement('div',{className:'slot-subj'},slot.subject_name),
+                      React.createElement('div',{className:'slot-code'},slot.subject_code),
+                      slot.faculty!=='—'&&React.createElement('div',{className:'slot-fac'},`👤 ${slot.faculty}`),
+                      React.createElement('div',{className:'slot-time'},slot.time_slot)
+                    )
+                  );
+                })
+              )
+            )
+          )
+        )
+      ),
+
+      // Summary
+      React.createElement('div',{className:'card',style:{marginTop:14}},
+        React.createElement('div',{className:'card-h'},'📊 Summary — '+sec.section),
+        React.createElement('div',{className:'card-sub'},'Total periods assigned per subject this week'),
+        React.createElement('div',{className:'sum-grid'},
+          Object.entries(sec.summary).map(([name,count])=>
+            React.createElement('div',{key:name,className:'sum-tile'},
+              React.createElement('div',{className:'sum-lbl'},'Periods/week'),
+              React.createElement('div',{className:'sum-val'},count),
+              React.createElement('div',{className:'sum-name'},name)
+            )
+          )
+        )
+      )
+    ),
+
+    // Actions
+    React.createElement('div',{className:'act no-print'},
+      React.createElement('button',{className:'btn btn-secondary',onClick:onBack},'← Edit Sections'),
+      React.createElement('div',{className:'act-r'},
+        React.createElement('span',{style:{fontSize:11,color:'var(--fg-3)',fontStyle:'italic'}},'↺ Regenerate shuffles slot assignment'),
+        React.createElement('button',{className:'btn btn-primary',onClick:onRegen},'↺ Regenerate'),
+      )
+    )
+  );
+}
+
+// ── APP ROOT ──────────────────────────────────────────────────────────────
+function App(){
+  const [step,setStep]=useState(0);
+  const [max,setMax]=useState(0);
+  const [theme,setTheme]=useState(null);
+  const [showNorms,setShowNorms]=useState(false);
+  const [suggestions,setSuggestions]=useState([]);
+  const [result,setResult]=useState(null);
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState(null);
+
+  const [inst,setInst]=useState({institution_name:'',department:'',academic_year:''});
+  const [sched,setSched]=useState({
+    days:['Monday','Tuesday','Wednesday','Thursday','Friday'],
+    periods_per_day:6,period_duration:50,start_time:'09:00',
+    break_after_period:2,break_duration:15,
+    lunch_after_period:4,lunch_duration:45,
+  });
+  const [sectData,setSectData]=useState({sections:[]});
+
+  useEffect(()=>{
+    fetch(`${API}/subject-suggestions`).then(r=>r.json()).then(setSuggestions).catch(()=>{});
+  },[]);
+
+  const go=n=>{setStep(n);if(n>max)setMax(n);};
+
+  const generate=async()=>{
+    setLoading(true);setError(null);go(3);
+    try{
+      const payload={
+        ...inst,...sched,
+        sections:sectData.sections.map(({id,...rest})=>({
+          ...rest,
+          subjects:rest.subjects.map(({id:_,...s})=>s)
+        }))
+      };
+      const res=await fetch(`${API}/generate-department-timetable`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+      if(!res.ok){const e=await res.json();throw new Error(e.detail||'Failed');}
+      setResult(await res.json());
+    }catch(e){
+      setError(e.message||'Could not connect. Make sure the Python server is running on port 8000.');
+    }finally{setLoading(false);}
+  };
+
+  const toggleTheme=()=>{
+    const cur=document.documentElement.getAttribute('data-theme');
+    const next=cur==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme',next);
+    setTheme(next);
+  };
+
+  return React.createElement('div',null,
+    showNorms&&React.createElement(NormsModal,{onClose:()=>setShowNorms(false)}),
+
+    React.createElement('header',{className:'hdr'},
+      React.createElement('div',{className:'hdr-in'},
+        React.createElement('div',{className:'logo'},
+          React.createElement('div',{className:'logo-icon'},'📅'),
+          React.createElement('div',{className:'logo-txt'},
+            'Timetable',React.createElement('span',null,' Manager'))
+        ),
+        React.createElement('div',{className:'hdr-actions'},
+          React.createElement('button',{className:'btn btn-ghost btn-sm',
+            onClick:()=>setShowNorms(true),title:'Hours norms guide'},'📊 Norms'),
+          React.createElement('button',{className:'btn btn-secondary btn-sm',
+            onClick:toggleTheme,title:'Toggle theme'},theme==='dark'?'☀️':'🌙')
+        )
+      )
+    ),
+
+    React.createElement('main',{className:'main'},
+      React.createElement(StepsBar,{cur:step,max,go}),
+      step===0&&React.createElement(Step1,{data:inst,set:setInst,onNext:()=>go(1)}),
+      step===1&&React.createElement(Step2,{data:sched,set:setSched,onNext:()=>go(2),onBack:()=>go(0)}),
+      step===2&&React.createElement(Step3,{
+        data:sectData,set:setSectData,schedData:sched,
+        onNext:generate,onBack:()=>go(1),suggestions,
+        showNormsModal:()=>setShowNorms(true)
+      }),
+      step===3&&React.createElement(Step4,{result,loading,error,onBack:()=>go(2),onRegen:generate}),
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+
+</body></html>
